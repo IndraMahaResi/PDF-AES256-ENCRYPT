@@ -16,14 +16,34 @@ const downloadBtn = document.getElementById('downloadBtn');
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
+// Demo Elements (akan diinisialisasi nanti)
+let showCodeBtn, codeModal, modalClose;
+let demoTabs, demoContainers, codeTabs, codeContents;
+let playDemoBtn, resetDemoBtn, generateDemoBtn, demoPassword, decryptPassword;
+
 // State
 let currentFile = null;
 let currentFilename = null;
 let downloadFilename = null;
 let downloadAction = null;
 
+// Demo state
+let demoSteps = [];
+let currentStep = 0;
+let demoInterval = null;
+let demoData = null;
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    initMainApp();
+    initDemoSystem();
+    addGlobalStyles();
+    createVerifyButton();
+});
+
+// ===== FUNGSI UTAMA APLIKASI =====
+
+function initMainApp() {
     // Tab Switching
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -90,34 +110,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check for existing files to cleanup
     cleanupOldFiles();
-});
+}
 
-// File selection handler
 async function handleFileSelect(file) {
-    // Validasi file type - SESUAIKAN DENGAN BACKEND
+    // Validasi file type
     const isPdf = file.name.toLowerCase().endsWith('.pdf');
     const isEncrypted = file.name.toLowerCase().endsWith('.aes256');
     
     if (!isPdf && !isEncrypted) {
-        showError('Please select a PDF file or .aes256 encrypted file');
+        showError('Harap pilih file PDF atau file terenkripsi .aes256');
         return;
     }
 
     // Validate file size (16MB max)
     if (file.size > 16 * 1024 * 1024) {
-        showError('File size must be less than 16MB');
+        showError('Ukuran file harus kurang dari 16MB');
         return;
     }
 
     // Jika file PDF, verifikasi
     if (isPdf) {
-        showLoading('Verifying PDF file...');
+        showLoading('Memverifikasi file PDF...');
         try {
             const verification = await verifyPdf(file);
             
             if (!verification.valid) {
                 hideLoading();
-                showError('Invalid PDF file. Please upload a valid PDF document.');
+                showError('File PDF tidak valid. Harap unggah dokumen PDF yang valid.');
                 return;
             }
         } catch (error) {
@@ -133,7 +152,7 @@ async function handleFileSelect(file) {
 
     // Update UI
     const fileIcon = isEncrypted ? 'fas fa-lock' : 'fas fa-file-pdf';
-    const fileType = isEncrypted ? 'Encrypted File (.aes256)' : 'PDF Document';
+    const fileType = isEncrypted ? 'File Terenkripsi (.aes256)' : 'Dokumen PDF';
     
     fileInfo.innerHTML = `
         <div class="file-details">
@@ -141,7 +160,7 @@ async function handleFileSelect(file) {
             <div>
                 <h4>${file.name}</h4>
                 <p>${formatFileSize(file.size)} • ${fileType}</p>
-                ${isPdf ? '<span class="file-valid"><i class="fas fa-check-circle"></i> Valid PDF</span>' : ''}
+                ${isPdf ? '<span class="file-valid"><i class="fas fa-check-circle"></i> PDF Valid</span>' : ''}
             </div>
         </div>
         <button class="btn-clear" id="clearFile">
@@ -162,19 +181,18 @@ async function handleFileSelect(file) {
         encryptBtn.disabled = true;
         decryptBtn.style.opacity = '1';
         encryptBtn.style.opacity = '0.5';
-        decryptBtn.title = 'Ready to decrypt';
-        encryptBtn.title = 'Upload a PDF file to encrypt';
+        decryptBtn.title = 'Siap mendekripsi';
+        encryptBtn.title = 'Unggah file PDF untuk mengenkripsi';
     } else {
         encryptBtn.disabled = false;
         decryptBtn.disabled = true;
         encryptBtn.style.opacity = '1';
         decryptBtn.style.opacity = '0.5';
-        encryptBtn.title = 'Ready to encrypt';
-        decryptBtn.title = 'Upload an .aes256 file to decrypt';
+        encryptBtn.title = 'Siap mengenkripsi';
+        decryptBtn.title = 'Unggah file .aes256 untuk mendekripsi';
     }
 }
 
-// Clear selected file
 function clearFile() {
     currentFile = null;
     currentFilename = null;
@@ -184,17 +202,16 @@ function clearFile() {
     decryptBtn.disabled = true;
     encryptBtn.style.opacity = '0.5';
     decryptBtn.style.opacity = '0.5';
-    encryptBtn.title = 'Please upload a file first';
-    decryptBtn.title = 'Please upload a file first';
+    encryptBtn.title = 'Harap unggah file terlebih dahulu';
+    decryptBtn.title = 'Harap unggah file terlebih dahulu';
 }
 
-// Password strength checker
 function checkPasswordStrength() {
     const password = passwordInput.value;
     let strength = 0;
-    let text = 'Password Strength: ';
+    let text = 'Kekuatan Password: ';
 
-    // Length check (minimum 4 for backend, but we encourage 8+)
+    // Length check
     if (password.length >= 4) strength++;
     if (password.length >= 8) strength++;
     if (password.length >= 12) strength++;
@@ -208,41 +225,39 @@ function checkPasswordStrength() {
     passwordStrength.className = 'strength-bar';
     
     if (password.length === 0) {
-        text += 'None';
+        text += 'Kosong';
     } else if (strength <= 2) {
         passwordStrength.classList.add('weak');
-        text += 'Weak';
+        text += 'Lemah';
     } else if (strength <= 3) {
         passwordStrength.classList.add('medium');
-        text += 'Medium';
+        text += 'Sedang';
     } else if (strength <= 4) {
         passwordStrength.classList.add('strong');
-        text += 'Strong';
+        text += 'Kuat';
     } else {
         passwordStrength.classList.add('very-strong');
-        text += 'Very Strong';
+        text += 'Sangat Kuat';
     }
 
     strengthText.textContent = text;
 }
 
-// Process file (encrypt/decrypt)
 async function processFile(action) {
     // Validation
     if (!currentFile) {
-        showError('Please select a file first');
+        showError('Harap pilih file terlebih dahulu');
         return;
     }
 
     const password = passwordInput.value;
     if (!password) {
-        showError('Please enter a password');
+        showError('Harap masukkan password');
         return;
     }
 
-    // Backend requires minimum 4 characters
     if (password.length < 4) {
-        showError('Password must be at least 4 characters long');
+        showError('Password harus minimal 4 karakter');
         return;
     }
 
@@ -252,8 +267,8 @@ async function processFile(action) {
     
     // Update processing message
     const processMsg = action === 'encrypt' 
-        ? 'Encrypting with AES-256-CBC...' 
-        : 'Decrypting and validating...';
+        ? 'Mengenkripsi dengan AES-256-CBC...' 
+        : 'Mendekripsi dan memvalidasi...';
     document.querySelector('.animation-container p').textContent = processMsg;
     
     // Disable buttons during processing
@@ -271,7 +286,7 @@ async function processFile(action) {
 
         // Send request to server with timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
         
         const response = await fetch('/upload', {
             method: 'POST',
@@ -288,7 +303,7 @@ async function processFile(action) {
         }
 
         if (!result.success) {
-            throw new Error(result.error || 'Processing failed');
+            throw new Error(result.error || 'Proses gagal');
         }
 
         // Show success
@@ -298,12 +313,12 @@ async function processFile(action) {
         let errorMsg = error.message;
         
         if (error.name === 'AbortError') {
-            errorMsg = 'Request timeout. The file might be too large or server is busy.';
+            errorMsg = 'Timeout. File mungkin terlalu besar atau server sibuk.';
         } else if (error.message.includes('Failed to fetch')) {
-            errorMsg = 'Network error. Please check your connection.';
+            errorMsg = 'Kesalahan jaringan. Periksa koneksi Anda.';
         } else if (error.message.toLowerCase().includes('password') || 
                    error.message.toLowerCase().includes('invalid')) {
-            errorMsg = 'Incorrect password or corrupted file. Please check your password and try again.';
+            errorMsg = 'Password salah atau file rusak. Periksa password Anda dan coba lagi.';
         }
         
         showError(errorMsg);
@@ -316,16 +331,15 @@ async function processFile(action) {
         if (isEncrypted) {
             decryptBtn.disabled = false;
             decryptBtn.style.opacity = '1';
-            decryptBtn.title = 'Ready to decrypt';
+            decryptBtn.title = 'Siap mendekripsi';
         } else {
             encryptBtn.disabled = false;
             encryptBtn.style.opacity = '1';
-            encryptBtn.title = 'Ready to encrypt';
+            encryptBtn.title = 'Siap mengenkripsi';
         }
     }
 }
 
-// Show result
 function showResult(message, filename, action, fileSize) {
     resultMessage.textContent = message;
     downloadFilename = filename;
@@ -334,8 +348,8 @@ function showResult(message, filename, action, fileSize) {
     // Update download button text
     const sizeText = fileSize ? ` (${formatFileSize(fileSize)})` : '';
     const btnText = action === 'encrypt' 
-        ? `Download Encrypted File${sizeText}` 
-        : `Download PDF${sizeText}`;
+        ? `Unduh File Terenkripsi${sizeText}` 
+        : `Unduh PDF${sizeText}`;
     
     downloadBtn.innerHTML = `<i class="fas fa-download"></i> ${btnText}`;
     resultContainer.style.display = 'block';
@@ -344,10 +358,9 @@ function showResult(message, filename, action, fileSize) {
     resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// Download file
 function downloadFile() {
     if (!downloadFilename || !downloadAction) {
-        showError('No file to download');
+        showError('Tidak ada file untuk diunduh');
         return;
     }
     
@@ -365,7 +378,6 @@ function downloadFile() {
     document.body.removeChild(link);
 }
 
-// Show error message
 function showError(message) {
     // Remove any existing error notifications
     document.querySelectorAll('.error-notification').forEach(el => el.remove());
@@ -401,7 +413,6 @@ function showError(message) {
     });
 }
 
-// Format file size
 function formatFileSize(bytes) {
     if (bytes === 0 || !bytes) return '0 Bytes';
     const k = 1024;
@@ -410,7 +421,6 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Clean up old files
 async function cleanupOldFiles() {
     try {
         await fetch('/cleanup', { method: 'POST' });
@@ -419,7 +429,6 @@ async function cleanupOldFiles() {
     }
 }
 
-// Fungsi untuk memverifikasi PDF
 async function verifyPdf(file) {
     const formData = new FormData();
     formData.append('file', file);
@@ -437,12 +446,10 @@ async function verifyPdf(file) {
         return await response.json();
     } catch (error) {
         console.error('Verification error:', error);
-        // Return default valid if verification fails
         return { valid: true, error: 'Verification service unavailable' };
     }
 }
 
-// Fungsi loading
 function showLoading(message) {
     // Remove any existing loading overlay
     hideLoading();
@@ -466,9 +473,342 @@ function hideLoading() {
     }
 }
 
-// Add CSS for styling
-document.addEventListener('DOMContentLoaded', () => {
-    // Add CSS styles if not already present
+// ===== DEMO KRIPTOGRAFI SYSTEM =====
+
+function initDemoSystem() {
+    // Initialize demo elements
+    showCodeBtn = document.getElementById('showCodeBtn');
+    codeModal = document.getElementById('codeModal');
+    modalClose = document.getElementById('modalClose');
+    
+    if (!codeModal) {
+        console.warn('Code modal not found. Demo features disabled.');
+        return;
+    }
+    
+    demoTabs = document.querySelectorAll('.demo-tab');
+    demoContainers = document.querySelectorAll('.demo-container');
+    codeTabs = document.querySelectorAll('.code-tab');
+    codeContents = document.querySelectorAll('.code-content');
+    playDemoBtn = document.getElementById('playDemo');
+    resetDemoBtn = document.getElementById('resetDemo');
+    generateDemoBtn = document.getElementById('generateDemo');
+    demoPassword = document.getElementById('demoPassword');
+    decryptPassword = document.getElementById('decryptPassword');
+
+    // Initialize demo data
+    initDemoData();
+
+    // Event listeners for demo
+    if (showCodeBtn) {
+        showCodeBtn.addEventListener('click', () => {
+            codeModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            initDemoSteps();
+            highlightCode();
+        });
+    }
+
+    if (modalClose) {
+        modalClose.addEventListener('click', () => {
+            closeModal();
+        });
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === codeModal) {
+            closeModal();
+        }
+    });
+
+    // Demo tabs switching
+    demoTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const demoType = tab.getAttribute('data-demo');
+            
+            // Update active tab
+            demoTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Show active container
+            demoContainers.forEach(container => {
+                container.classList.remove('active');
+                if (container.id === `${demoType}Demo`) {
+                    container.classList.add('active');
+                }
+            });
+            
+            // Reset demo if switching away from encrypt demo
+            if (demoType !== 'encrypt') {
+                resetDemo();
+            }
+        });
+    });
+
+    // Code tabs switching
+    if (codeTabs.length > 0) {
+        codeTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const codeType = tab.getAttribute('data-code');
+                
+                // Update active tab
+                codeTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show active content
+                codeContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${codeType}Code`) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+    }
+
+    // Play demo button
+    if (playDemoBtn) {
+        playDemoBtn.addEventListener('click', () => {
+            if (demoInterval) {
+                // Pause demo
+                clearInterval(demoInterval);
+                demoInterval = null;
+                playDemoBtn.innerHTML = '<i class="fas fa-play"></i> Lanjutkan Demo';
+            } else {
+                // Play or resume demo
+                playDemo();
+            }
+        });
+    }
+
+    // Reset demo button
+    if (resetDemoBtn) {
+        resetDemoBtn.addEventListener('click', resetDemo);
+    }
+
+    // Generate new demo data
+    if (generateDemoBtn) {
+        generateDemoBtn.addEventListener('click', () => {
+            initDemoData();
+            resetDemo();
+        });
+    }
+
+    // Update demo when password changes
+    if (demoPassword) {
+        demoPassword.addEventListener('input', () => {
+            initDemoData();
+        });
+    }
+
+    // Update decrypt demo when password changes
+    if (decryptPassword) {
+        decryptPassword.addEventListener('input', () => {
+            const status = document.getElementById('validationStatus');
+            if (status && demoData) {
+                if (decryptPassword.value === demoData.password) {
+                    status.innerHTML = '<i class="fas fa-check-circle valid"></i><span>Password valid</span>';
+                    status.style.color = 'var(--success)';
+                } else {
+                    status.innerHTML = '<i class="fas fa-times-circle invalid"></i><span>Password tidak cocok</span>';
+                    status.style.color = 'var(--danger)';
+                }
+            }
+        });
+    }
+}
+
+function closeModal() {
+    if (codeModal) {
+        codeModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        resetDemo();
+    }
+}
+
+// Initialize demo data
+function initDemoData() {
+    const password = demoPassword ? demoPassword.value || "PasswordDemo123!" : "PasswordDemo123!";
+    demoData = {
+        password: password,
+        passwordHash: simulateSHA256(password),
+        salt: generateRandomHex(16),
+        key: generateRandomHex(32),
+        iv: generateRandomHex(16),
+        originalData: "255044462D312E340A2525454F460A", // %PDF-1.4 header
+        xorKey: generateRandomHex(8),
+        cipherBlocks: [
+            generateRandomHex(8),
+            generateRandomHex(8)
+        ]
+    };
+    
+    // Update UI with demo data
+    updateDemoUI();
+}
+
+// Generate random hex string
+function generateRandomHex(bytes) {
+    const arr = new Uint8Array(bytes);
+    crypto.getRandomValues(arr);
+    return Array.from(arr, byte => byte.toString(16).padStart(2, '0')).join(' ').toUpperCase();
+}
+
+// Simple SHA-256 simulation
+function simulateSHA256(text) {
+    // Simplified version for demo - in production use actual SHA-256
+    let hash = '';
+    for (let i = 0; i < 64; i++) {
+        hash += Math.floor(Math.random() * 16).toString(16);
+    }
+    return hash.toUpperCase();
+}
+
+// XOR simulation
+function xorHex(hex1, hex2) {
+    const bytes1 = hex1.split(' ').map(b => parseInt(b, 16));
+    const bytes2 = hex2.split(' ').map(b => parseInt(b, 16));
+    const result = [];
+    
+    const length = Math.min(bytes1.length, bytes2.length);
+    for (let i = 0; i < length; i++) {
+        result.push((bytes1[i] ^ bytes2[i]).toString(16).padStart(2, '0'));
+    }
+    
+    return result.join(' ').toUpperCase();
+}
+
+// Update demo UI with current data
+function updateDemoUI() {
+    if (!demoData) return;
+    
+    // Helper function to safely update element
+    function updateElement(id, content) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = content;
+        }
+    }
+    
+    // Update encrypt demo
+    updateElement('passwordHash', demoData.passwordHash.substring(0, 24) + '...');
+    updateElement('originalHex', demoData.originalData.substring(0, 11));
+    updateElement('passwordHex', demoData.xorKey);
+    updateElement('xorResult', xorHex(demoData.originalData.substring(0, 11), demoData.xorKey));
+    updateElement('demoSalt', demoData.salt.substring(0, 24) + '...');
+    updateElement('demoKey', demoData.key.substring(0, 24) + '...');
+    updateElement('demoIV', demoData.iv.substring(0, 24) + '...');
+    updateElement('blockIV', demoData.iv.substring(0, 11));
+    updateElement('cipherBlock1', demoData.cipherBlocks[0]);
+    updateElement('finalSalt', demoData.salt.substring(0, 24) + '...');
+    updateElement('finalIV', demoData.iv.substring(0, 24) + '...');
+    updateElement('finalCipher', demoData.cipherBlocks.join(' '));
+    
+    // Update decrypt demo
+    updateElement('decryptedData', demoData.originalData);
+}
+
+// Initialize demo steps for animation
+function initDemoSteps() {
+    const encryptDemo = document.getElementById('encryptDemo');
+    if (encryptDemo) {
+        demoSteps = Array.from(encryptDemo.querySelectorAll('.demo-step'));
+        currentStep = 0;
+    }
+}
+
+// Play demo step by step
+function playDemo() {
+    if (demoInterval) clearInterval(demoInterval);
+    
+    // Reset all steps
+    demoSteps.forEach(step => step.classList.remove('active-step'));
+    currentStep = 0;
+    
+    // Play first step
+    playNextStep();
+    
+    // Set interval for next steps
+    demoInterval = setInterval(() => {
+        if (currentStep >= demoSteps.length) {
+            clearInterval(demoInterval);
+            demoInterval = null;
+            if (playDemoBtn) {
+                playDemoBtn.innerHTML = '<i class="fas fa-play"></i> Jalankan Demo Lagi';
+            }
+            return;
+        }
+        playNextStep();
+    }, 3000);
+    
+    // Update button text
+    if (playDemoBtn) {
+        playDemoBtn.innerHTML = '<i class="fas fa-pause"></i> Jeda Demo';
+    }
+}
+
+// Play next step in demo
+function playNextStep() {
+    if (currentStep >= demoSteps.length) return;
+    
+    // Remove active class from all steps
+    demoSteps.forEach(step => step.classList.remove('active-step'));
+    
+    // Add active class to current step
+    demoSteps[currentStep].classList.add('active-step');
+    
+    // Scroll to current step
+    demoSteps[currentStep].scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+    });
+    
+    currentStep++;
+}
+
+// Reset demo
+function resetDemo() {
+    if (demoInterval) {
+        clearInterval(demoInterval);
+        demoInterval = null;
+    }
+    
+    if (demoSteps && demoSteps.length > 0) {
+        demoSteps.forEach(step => step.classList.remove('active-step'));
+    }
+    currentStep = 0;
+    
+    if (playDemoBtn) {
+        playDemoBtn.innerHTML = '<i class="fas fa-play"></i> Jalankan Demo Langkah demi Langkah';
+    }
+}
+
+// Add syntax highlighting to code blocks
+function highlightCode() {
+    const codeBlocks = document.querySelectorAll('.code-content code');
+    codeBlocks.forEach(block => {
+        let code = block.textContent;
+        
+        // Simple syntax highlighting
+        code = code.replace(/\b(def|class|return|try|except|if|else|for|while|import|from|as)\b/g, 
+            '<span class="keyword">$1</span>');
+        code = code.replace(/\b(encrypt_pdf|decrypt_pdf|derive_key_and_iv|xor_transform|is_valid_pdf)\b/g, 
+            '<span class="function">$1</span>');
+        code = code.replace(/(".*?"|'.*?')/g, 
+            '<span class="string">$1</span>');
+        code = code.replace(/#.*$/gm, 
+            '<span class="comment">$&</span>');
+        code = code.replace(/\b(\d+)\b/g, 
+            '<span class="number">$1</span>');
+        
+        block.innerHTML = code;
+    });
+}
+
+// ===== UTILITY FUNCTIONS =====
+
+function addGlobalStyles() {
     if (!document.getElementById('dynamic-styles')) {
         const style = document.createElement('style');
         style.id = 'dynamic-styles';
@@ -490,6 +830,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             @keyframes spin {
                 to { transform: rotate(360deg); }
+            }
+            
+            @keyframes highlightStep {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.02); }
+                100% { transform: scale(1); }
             }
             
             .error-notification {
@@ -630,58 +976,110 @@ document.addEventListener('DOMContentLoaded', () => {
                 letter-spacing: 1px;
                 margin-top: 20px;
             }
+            
+            .demo-step.active-step {
+                animation: highlightStep 0.5s ease;
+            }
+            
+            .code-content code .keyword { color: #ff79c6; font-weight: bold; }
+            .code-content code .function { color: #50fa7b; }
+            .code-content code .string { color: #f1fa8c; }
+            .code-content code .comment { color: #6272a4; font-style: italic; }
+            .code-content code .number { color: #bd93f9; }
         `;
         document.head.appendChild(style);
     }
-    
-    // Create Verify PDF button
+}
+
+function createVerifyButton() {
     const verifyPdfBtn = document.createElement('button');
     verifyPdfBtn.id = 'verifyPdfBtn';
     verifyPdfBtn.className = 'btn-outline';
-    verifyPdfBtn.innerHTML = '<i class="fas fa-search"></i> Verify PDF';
+    verifyPdfBtn.innerHTML = '<i class="fas fa-search"></i> Verifikasi PDF';
     verifyPdfBtn.style.marginTop = '10px';
-    verifyPdfBtn.style.display = 'none'; // Hidden by default
+    verifyPdfBtn.style.display = 'none';
     
     // Add button after upload area
-    uploadArea.parentNode.insertBefore(verifyPdfBtn, uploadArea.nextSibling);
+    if (uploadArea && uploadArea.parentNode) {
+        uploadArea.parentNode.insertBefore(verifyPdfBtn, uploadArea.nextSibling);
+    }
     
     // Show verify button when PDF is selected
     fileInput.addEventListener('change', () => {
         if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
-            if (file.name.toLowerCase().endsWith('.pdf')) {
-                verifyPdfBtn.style.display = 'inline-flex';
-            } else {
-                verifyPdfBtn.style.display = 'none';
-            }
+            verifyPdfBtn.style.display = file.name.toLowerCase().endsWith('.pdf') ? 'inline-flex' : 'none';
         }
     });
     
     // Verify button click handler
     verifyPdfBtn.addEventListener('click', async () => {
         if (!currentFile) {
-            showError('Please select a file first');
+            showError('Harap pilih file terlebih dahulu');
             return;
         }
         
         if (!currentFile.name.toLowerCase().endsWith('.pdf')) {
-            showError('Only PDF files can be verified');
+            showError('Hanya file PDF yang dapat diverifikasi');
             return;
         }
         
-        showLoading('Verifying PDF...');
+        showLoading('Memverifikasi PDF...');
         try {
             const verification = await verifyPdf(currentFile);
             hideLoading();
             
             if (verification.valid) {
-                showError('✓ PDF file is valid and ready for encryption');
+                showError('✓ File PDF valid dan siap untuk dienkripsi');
             } else {
-                showError('✗ Invalid PDF file. Please upload a different file.');
+                showError('✗ File PDF tidak valid. Harap unggah file yang berbeda.');
             }
         } catch (error) {
             hideLoading();
-            showError('Verification service unavailable. Proceeding with upload...');
+            showError('Layanan verifikasi tidak tersedia. Melanjutkan dengan upload...');
         }
     });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // Close modal with Escape key
+    if (e.key === 'Escape' && codeModal && codeModal.style.display === 'block') {
+        closeModal();
+    }
+    
+    // Focus password field with Alt+P
+    if (e.altKey && e.key === 'p') {
+        e.preventDefault();
+        passwordInput.focus();
+    }
+    
+    // Focus file input with Alt+F
+    if (e.altKey && e.key === 'f') {
+        e.preventDefault();
+        fileInput.click();
+    }
 });
+
+// Handle page visibility change
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && demoInterval) {
+        // Pause demo when tab is hidden
+        clearInterval(demoInterval);
+        demoInterval = null;
+        if (playDemoBtn) {
+            playDemoBtn.innerHTML = '<i class="fas fa-play"></i> Lanjutkan Demo';
+        }
+    }
+});
+
+// Export functions for testing (optional)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        formatFileSize,
+        checkPasswordStrength,
+        generateRandomHex,
+        simulateSHA256,
+        xorHex
+    };
+}
