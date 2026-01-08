@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Enkripsi PDF AES-256 Web3</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header dengan tema Web3 -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>PDF<span class="gradient-text">AES-256</span></h1>
+            </div>
+            <div class="tagline">
+                <p>Enkripsi & Dekripsi PDF Tingkat Militer</p>
+                <div class="network-status">
+                    <span class="status-dot active"></span>
+                    <span>Sistem Online</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Navigation Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="execution">
+                    <i class="fas fa-play-circle"></i> Eksekusi
+                </button>
+                <button class="tab-btn" data-tab="process">
+                    <i class="fas fa-cogs"></i> Alur Proses
+                </button>
+                <button class="tab-btn" data-tab="guide">
+                    <i class="fas fa-book"></i> Panduan
+                </button>
+            </div>
+
+            <!-- Execution Tab -->
+            <div class="tab-content active" id="execution-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-terminal"></i> Antarmuka Perintah</h2>
+                        <div class="card-badge">SESI AKTIF</div>
+                    </div>
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Seret & Lepas File PDF</h3>
+                        <p>atau klik untuk memilih (Maks. 16MB)</p>
+                        <input type="file" id="fileInput" accept=".pdf,.aes256" hidden>
+                        <button class="btn-outline" id="browseBtn">
+                            <i class="fas fa-folder-open"></i> Pilih File
+                        </button>
+                        <div class="file-info" id="fileInfo"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="fas fa-key"></i> Kunci Enkripsi
+                        </label>
+                        <div class="input-with-icon">
+                            <input type="password" id="password" placeholder="Masukkan password (min. 4 karakter)">
+                            <button type="button" id="togglePassword" class="icon-btn" title="Tampilkan/sembunyikan password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar"></div>
+                            <span class="strength-text">Kekuatan Password: Kosong</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-encrypt" id="encryptBtn" title="Unggah file PDF untuk mengenkripsi">
+                            <i class="fas fa-lock"></i> Enkripsi PDF
+                            <div class="btn-glow"></div>
+                        </button>
+                        <button class="btn-decrypt" id="decryptBtn" title="Unggah file .aes256 untuk mendekripsi">
+                            <i class="fas fa-unlock"></i> Dekripsi PDF
+                            <div class="btn-glow"></div>
+                        </button>
+                    </div>
+
+                    <div class="process-animation" id="processAnimation" style="display: none;">
+                        <div class="animation-container">
+                            <div class="crypto-node"></div>
+                            <div class="crypto-node"></div>
+                            <div class="crypto-node"></div>
+                            <div class="wave"></div>
+                            <p>Memproses dengan AES-256-CBC...</p>
+                        </div>
+                    </div>
+
+                    <div class="result-container" id="resultContainer" style="display: none;">
+                        <div class="result-success">
+                            <i class="fas fa-check-circle"></i>
+                            <h3 id="resultMessage">Operasi Berhasil!</h3>
+                            <button class="btn-download" id="downloadBtn">
+                                <i class="fas fa-download"></i> Unduh File
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <i class="fas fa-microchip"></i>
+                        <h4>Enkripsi AES-256</h4>
+                        <p>Algoritma enkripsi tingkat militer</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fas fa-layer-group"></i>
+                        <h4>Transformasi XOR</h4>
+                        <p>Lapisan keamanan tambahan</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fas fa-shield-halved"></i>
+                        <h4>Zero-Knowledge</h4>
+                        <p>File diproses secara lokal</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Process Flow Tab -->
+            <div class="tab-content" id="process-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-project-diagram"></i> Alur Proses Kriptografi</h2>
+                    </div>
+                    
+                    <div class="process-flow">
+                        <div class="flow-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>Unggah PDF</h3>
+                                <p>Sistem membaca data biner dari file PDF yang diunggah</p>
+                            </div>
+                            <div class="step-icon">
+                                <i class="fas fa-file-upload"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flow-arrow">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        
+                        <div class="flow-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>Transformasi XOR</h3>
+                                <p>Transformasi XOR berbasis password diterapkan ke data biner</p>
+                                <code>data ⊕ byte_password</code>
+                            </div>
+                            <div class="step-icon">
+                                <i class="fas fa-random"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flow-arrow">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        
+                        <div class="flow-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>Derivasi Kunci</h3>
+                                <p>Password dikonversi menjadi kunci 256-bit menggunakan PBKDF2</p>
+                                <code>PBKDF2(password, salt, 100000 iterasi)</code>
+                            </div>
+                            <div class="step-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flow-arrow">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        
+                        <div class="flow-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h3>Enkripsi AES-256-CBC</h3>
+                                <p>Data dienkripsi dengan AES-256 dalam mode CBC</p>
+                                <code>IV + AES-256-CBC(data)</code>
+                            </div>
+                            <div class="step-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flow-arrow">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        
+                        <div class="flow-step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h3>Header Keamanan</h3>
+                                <p>File terenkripsi ditambahkan header khusus untuk identifikasi</p>
+                                <code>header + salt + data_terenkripsi</code>
+                            </div>
+                            <div class="step-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flow-arrow">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        
+                        <div class="flow-step">
+                            <div class="step-number">6</div>
+                            <div class="step-content">
+                                <h3>Unduh</h3>
+                                <p>File terenkripsi siap diunduh dengan ekstensi .aes256</p>
+                            </div>
+                            <div class="step-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="note-box">
+                        <i class="fas fa-info-circle"></i>
+                        <p><strong>Proses Dekripsi:</strong> Alur terbalik dimulai dari verifikasi header, dekripsi AES, transformasi XOR terbalik</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Guide Tab -->
+            <div class="tab-content" id="guide-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-graduation-cap"></i> Panduan Pengguna & Dokumentasi</h2>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <h3><i class="fas fa-play"></i> Memulai</h3>
+                        <ol class="guide-list">
+                            <li>Navigasi ke tab <strong>Eksekusi</strong></li>
+                            <li>Unggah file PDF Anda (seret & lepas atau klik pilih)</li>
+                            <li>Masukkan password yang kuat (minimal 4 karakter)</li>
+                            <li>Pilih antara <strong>Enkripsi</strong> atau <strong>Dekripsi</strong></li>
+                            <li>Unduh file yang telah diproses</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <h3><i class="fas fa-lock"></i> Proses Enkripsi</h3>
+                        <div class="guide-card">
+                            <h4>📌 Yang Terjadi Selama Enkripsi:</h4>
+                            <ul>
+                                <li>Data biner PDF mengalami transformasi XOR</li>
+                                <li>Password dikonversi menjadi kunci enkripsi 256-bit</li>
+                                <li>Data dienkripsi dengan algoritma AES-256-CBC</li>
+                                <li>Salt dan IV dihasilkan untuk keamanan tambahan</li>
+                                <li>Hasil ditambahkan header khusus untuk identifikasi</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <h3><i class="fas fa-unlock"></i> Proses Dekripsi</h3>
+                        <div class="guide-card">
+                            <h4>📌 Persyaratan Dekripsi Berhasil:</h4>
+                            <ul>
+                                <li><strong>Password yang sama persis</strong> dengan saat enkripsi</li>
+                                <li>File harus dalam format .aes256 (dienkripsi oleh sistem ini)</li>
+                                <li>Integritas file harus terjaga (tidak ada modifikasi)</li>
+                            </ul>
+                            <p class="warning"><i class="fas fa-exclamation-triangle"></i> Password yang hilang tidak dapat dipulihkan. Sistem tidak menyimpan password apa pun.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <h3><i class="fas fa-shield-alt"></i> Fitur Keamanan</h3>
+                        <div class="feature-grid">
+                            <div class="feature">
+                                <i class="fas fa-fingerprint"></i>
+                                <h5>Kunci Berbasis Password</h5>
+                                <p>Kunci 256-bit diturunkan dari password Anda</p>
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-sync-alt"></i>
+                                <h5>Lapisan XOR</h5>
+                                <p>Transformasi tambahan sebelum AES</p>
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-user-secret"></i>
+                                <h5>Tidak Ada Penyimpanan Data</h5>
+                                <p>File diproses di memori, tidak disimpan</p>
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-bug"></i>
+                                <h5>Deteksi Manipulasi</h5>
+                                <p>Password/file tidak valid memicu error</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <h3><i class="fas fa-question-circle"></i> FAQ</h3>
+                        <div class="faq-item">
+                            <h4>Q: Apa perbedaan dengan sistem enkripsi lain?</h4>
+                            <p>A: Sistem ini menggunakan kombinasi XOR + AES-256 dengan header khusus, membuatnya lebih aman dan hanya dapat didekripsi oleh sistem ini.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>Q: Apakah file saya aman?</h4>
+                            <p>A: Ya, file diproses di server dan langsung dihapus setelah diunduh. Tidak ada penyimpanan permanen.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>Q: Berapa ukuran file maksimal?</h4>
+                            <p>A: Maksimal 16MB untuk menjaga kinerja sistem.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4><i class="fas fa-database"></i> Status Sistem</h4>
+                    <div class="status-item">
+                        <span class="status-indicator active"></span>
+                        <span>Mesin AES-256</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-indicator active"></span>
+                        <span>Prosesor XOR</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-indicator active"></span>
+                        <span>Penangan File</span>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4><i class="fas fa-info-circle"></i> Informasi Cepat</h4>
+                    <p>Ukuran file maksimal: 16MB</p>
+                    <p>Format yang didukung: PDF & .aes256</p>
+                    <p>Enkripsi: AES-256-CBC</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Penafian</h4>
+                    <p class="disclaimer">Alat ini hanya untuk penggunaan pribadi dan bisnis yang sah. Pengembang tidak bertanggung jawab atas penyalahgunaan perangkat lunak ini.</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2024 Sistem Enkripsi PDF AES-256 Web3 | Indra Maha Resi</p>
+                <div class="footer-links">
+                    <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="#" title="Kode"><i class="fas fa-code"></i></a>
+                    <a href="#" title="Keamanan"><i class="fas fa-shield-alt"></i></a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
