@@ -1,179 +1,210 @@
-🎯 Ringkasan Proyek
-Sistem Enkripsi PDF AES-256 Web3 adalah aplikasi web yang memungkinkan pengguna untuk mengamankan dokumen PDF mereka dengan enkripsi tingkat militer menggunakan algoritma AES-256. Sistem ini menggabungkan teknologi kriptografi modern dengan antarmuka pengguna bergaya Web3 untuk pengalaman yang profesional dan aman.
+🔐 PDF AES-256 Web3 Encryption System
 
-🎯 Tujuan Utama:
-✅ Enkripsi file PDF dengan algoritma AES-256-CBC
+Aplikasi PDF AES-256 Web3 Encryption System adalah aplikasi web modern yang memungkinkan pengguna mengamankan dokumen PDF menggunakan enkripsi tingkat militer AES-256-CBC, dipadukan dengan antarmuka bergaya Web3 yang futuristik, responsif, dan aman.
 
-✅ Dekripsi file dengan password yang benar
+Sistem ini dirancang dengan prinsip zero-knowledge, di mana file diproses secara sementara di memori tanpa penyimpanan permanen, sehingga privasi pengguna tetap terjaga.
 
-✅ Interface Web3 yang modern dan responsif
+🎯 Tujuan Utama
 
-✅ Proses tanpa penyimpanan data (zero-knowledge)
+✅ Enkripsi file PDF menggunakan algoritma AES-256-CBC
+
+✅ Dekripsi file terenkripsi menggunakan password yang valid
+
+✅ Antarmuka Web3 modern dan responsif
+
+✅ Zero-knowledge processing (tanpa penyimpanan permanen)
 
 ✅ Validasi file dan password yang kuat
 
 ✨ Fitur Utama
 🔐 Enkripsi & Dekripsi
-Enkripsi PDF: Mengubah file PDF menjadi format .aes256 yang aman
 
-Dekripsi: Mengembalikan file .aes256 ke PDF asli
+Enkripsi PDF
+Mengubah file PDF menjadi file terenkripsi dengan ekstensi .aes256
 
-Password Protection: Perlindungan berbasis password dengan minimum 4 karakter
+Dekripsi PDF
+Mengembalikan file .aes256 menjadi PDF asli
+
+Password Protection
+Password minimal 4 karakter dengan validasi client & server
 
 🎨 Antarmuka Pengguna
-Desain Web3: Tema gelap dengan gradien neon dan animasi
 
-Responsif: Berfungsi optimal di desktop dan mobile
+Desain Web3
+Tema gelap, gradien neon, dan animasi modern
 
-Drag & Drop: Unggah file dengan mudah
+Responsif
+Optimal untuk desktop maupun mobile
 
-Real-time Feedback: Indikator kekuatan password dan status proses
+Drag & Drop Upload
+Unggah file dengan cepat dan mudah
 
-🔒 Keamanan
-Zero-Knowledge: File diproses di memori, tidak disimpan permanen
+Real-time Feedback
+Indikator kekuatan password & status proses enkripsi
 
-Validasi File: Verifikasi integritas PDF sebelum proses
+🔒 Keamanan Sistem
 
-Error Handling: Pesan error yang informatif dan aman
+Zero-Knowledge Architecture
+File hanya diproses di memori
 
-Auto Cleanup: File temporary dihapus otomatis setelah 1 jam
+Validasi File
+Verifikasi integritas PDF sebelum enkripsi/dekripsi
 
-📊 Monitoring
-Status Sistem: Monitoring real-time komponen sistem
+Error Handling Aman
+Pesan error informatif tanpa membocorkan detail sensitif
 
-Log Proses: Visualisasi alur kriptografi
+Auto Cleanup
+File temporary otomatis dihapus setelah 1 jam
 
-File Info: Informasi detail file yang diunggah
+📊 Monitoring & Informasi
+
+Monitoring status sistem secara real-time
+
+Visualisasi alur proses kriptografi
+
+Informasi detail file yang diunggah
 
 🛠️ Teknologi yang Digunakan
-Backend (Python)
-Flask: Framework web minimalis
+Backend
 
-PyCryptodome: Library kriptografi untuk AES-256
+Python
 
-Werkzeug: Utility untuk file handling dan security
+Flask – Web framework ringan
 
-Frontend (HTML/CSS/JS)
-HTML5: Struktur halaman web
+PyCryptodome – Implementasi AES-256
 
-CSS3: Styling dengan variabel CSS dan animasi
+Werkzeug – File handling & security utility
 
-JavaScript ES6: Logika client-side
+Frontend
 
-Font Awesome: Ikon vektor
+HTML5 – Struktur halaman
 
-Google Fonts: Font Orbitron dan Exo 2
+CSS3 – Styling, variabel CSS, animasi
 
-Kriptografi
-Algoritma: AES-256-CBC
+JavaScript (ES6) – Logika client-side
 
-Mode: Cipher Block Chaining (CBC)
+Font Awesome – Ikon vektor
 
-Key Derivation: PBKDF2 dengan 100,000 iterasi
+Google Fonts – Orbitron & Exo 2
 
-Transformasi Tambahan: XOR layer untuk keamanan ekstra
+🔑 Spesifikasi Kriptografi
+
+Algoritma: AES-256
+
+Mode: CBC (Cipher Block Chaining)
+
+Key Derivation: PBKDF2
+
+Iterasi: 100.000
+
+Tambahan Keamanan: XOR Layer
 
 📁 Struktur Proyek
-text
 pdf-aes-web3/
 │
-├── app.py                      # Aplikasi Flask utama
-├── requirements.txt            # Dependensi Python
-├── README.md                   # Dokumentasi ini
+├── app.py                # Aplikasi Flask utama
+├── requirements.txt      # Dependensi Python
+├── README.md             # Dokumentasi proyek
 │
 ├── static/
 │   ├── css/
-│   │   └── style.css          # Stylesheet utama
+│   │   └── style.css     # Stylesheet utama
 │   └── js/
-│       └── script.js          # JavaScript client-side
+│       └── script.js     # JavaScript client-side
 │
 ├── templates/
-│   └── index.html             # Template HTML utama
+│   └── index.html        # Template HTML utama
 │
-├── uploads/                    # Folder untuk file PDF terdekripsi
-│   └── (file temporary)
+├── uploads/              # File PDF hasil dekripsi (temporary)
 │
-└── encrypted/                  # Folder untuk file terenkripsi
-    └── (file .aes256)
-⚙️ Instalasi & Menjalankan
+└── encrypted/            # File terenkripsi (.aes256)
+
+⚙️ Instalasi & Menjalankan Aplikasi
 Prasyarat
-Python 3.8 atau lebih baru
+
+Python 3.8+
 
 pip (Python package manager)
 
 Browser web modern
 
-Langkah-langkah Instalasi
-Clone/Download Proyek
-
-bash
+Langkah Instalasi
+1️⃣ Clone / Download Proyek
 git clone [repository-url]
 cd pdf-aes-web3
-Buat Virtual Environment (Opsional tapi Disarankan)
 
-bash
+2️⃣ Buat Virtual Environment (Disarankan)
 python -m venv venv
-# Windows:
+
+
+Windows
+
 venv\Scripts\activate
-# Mac/Linux:
+
+
+Mac / Linux
+
 source venv/bin/activate
-Instal Dependensi
 
-bash
+3️⃣ Instal Dependensi
 pip install -r requirements.txt
-Jalankan Aplikasi
 
-bash
+4️⃣ Jalankan Aplikasi
 python app.py
-Akses di Browser
 
-text
+5️⃣ Akses di Browser
 http://localhost:5000
+
+
 Port Alternatif
-bash
-# Jika port 5000 sedang digunakan
+
 python app.py --port=8080
+
 📖 Panduan Penggunaan
-1. Enkripsi File PDF
-Buka tab "Eksekusi"
+🔐 Enkripsi File PDF
 
-Klik area unggah atau "Pilih File"
+Buka tab Eksekusi
 
-Pilih file PDF yang ingin dienkripsi
+Unggah file PDF (klik atau drag & drop)
 
 Masukkan password (minimal 4 karakter)
 
-Klik tombol "Enkripsi PDF"
+Klik Enkripsi PDF
 
-Tunggu proses selesai
+Unduh file hasil enkripsi (.aes256)
 
-Klik "Unduh File" untuk mendapatkan file .aes256
+🔓 Dekripsi File
 
-2. Dekripsi File
-Buka tab "Eksekusi"
+Buka tab Eksekusi
 
-Unggah file dengan ekstensi .aes256
+Unggah file .aes256
 
-Masukkan password yang sama dengan saat enkripsi
+Masukkan password yang sama
 
-Klik tombol "Dekripsi PDF"
+Klik Dekripsi PDF
 
-Tunggu proses selesai
+Unduh file PDF asli
 
-Klik "Unduh File" untuk mendapatkan PDF asli
+📘 Informasi Tambahan
 
-3. Informasi Tambahan
-Tab "Alur Proses": Visualisasi langkah-langkah kriptografi
+Tab Alur Proses → Visualisasi langkah kriptografi
 
-Tab "Panduan": Dokumentasi lengkap dan FAQ
+Tab Panduan → Dokumentasi & FAQ
 
-Status Footer: Monitoring kesehatan sistem
+Footer Status → Monitoring kesehatan sistem
 
 ⚠️ Catatan Penting
+
 Password TIDAK DAPAT dipulihkan jika lupa
 
 File temporary dihapus otomatis setelah 1 jam
 
-Ukuran file maksimal: 16MB
+Maksimal ukuran file: 16 MB
 
-Format yang didukung: .pdf dan .aes256
+Format yang didukung: .pdf, .aes256
+
+🚀 Penutup
+
+Sistem ini dirancang untuk memberikan keamanan maksimal, privasi penuh, dan pengalaman pengguna modern dengan pendekatan Web3. Cocok untuk penggunaan akademik, profesional, maupun eksperimen kriptografi lanjutan.
+
+Secure your PDFs. Trust no storage. Web3 mindset.
